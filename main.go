@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	// Cargar variables de entorno
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error cargando archivo .env: %v", err)
@@ -21,9 +20,8 @@ func main() {
 
 	rabbitURL := os.Getenv("RABBITMQ_URL")
 	queueName := os.Getenv("FIRST_QUEUE")
-	apiURL := os.Getenv("API_URL") + "/notifications"
+	apiURL := os.Getenv("API_URL")
 
-	// Conectar a RabbitMQ
 	conn, err := amqp.Dial(rabbitURL)
 	if err != nil {
 		log.Fatalf("Error conectando a RabbitMQ: %v", err)
@@ -51,21 +49,19 @@ func main() {
 
 	fmt.Println("Escuchando mensajes en la cola...")
 
-	// Canal para procesar mensajes
 	forever := make(chan bool)
 	go func() {
 		for d := range msgs {
 			fmt.Printf("Mensaje recibido: %s\n", d.Body)
 
-			// Crear payload
 			data := map[string]string{"msg": string(d.Body)}
 			payload, err := json.Marshal(data)
 			if err != nil {
 				log.Printf("Error serializando JSON: %v", err)
 				continue
 			}
+			fmt.Println("Enviando solicitud a:", apiURL)
 
-			// Hacer POST a la API
 			resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(payload))
 			if err != nil {
 				log.Printf("Error enviando POST a la API: %v", err)
