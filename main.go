@@ -32,6 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error abriendo canal RabbitMQ: %v", err)
 	}
+	//fmt.Println("channel: %s", ch)
 	defer ch.Close()
 
 	msgs, err := ch.Consume(
@@ -47,7 +48,7 @@ func main() {
 		log.Fatalf("Error al consumir mensajes: %v", err)
 	}
 
-	fmt.Println("Escuchando mensajes en la cola...")
+	fmt.Printf("Escuchando mensajes en la cola...%s", queueName)
 
 	forever := make(chan bool)
 	go func() {
@@ -61,6 +62,7 @@ func main() {
 				continue
 			}
 			fmt.Println("Enviando solicitud a:", apiURL)
+			//fmt.Println("payload :", payload)
 
 			resp, err := http.Post(apiURL, "application/json", bytes.NewBuffer(payload))
 			if err != nil {
